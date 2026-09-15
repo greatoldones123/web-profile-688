@@ -1,0 +1,9 @@
+# Netlify 边缘转发：前端同域调用 /api/*，由 Netlify 转发到 Cloudflare Workers
+# 浏览器只看到 https://diyuzhou.com/api/*（HTTPS 同域），因此：
+#   - 不会触发 Mixed Content 拦截
+#   - 不产生跨域请求
+#
+# !!! 已配置真实地址：由 wrangler deploy 于 2026-09-15 输出 !!!
+# 重新部署后若子域变化，需同步修改这里
+
+/api/*  https://diyuzhou-api.2770894499.workers.dev/api/:splat  200

@@ -1,0 +1,18 @@
+{
+  "name": "diyuzhou-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "访客记录 API - Cloudflare Workers + D1",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create web-profile-visitors",
+    "db:init": "wrangler d1 execute web-profile-visitors --remote --file=./schema.sql",
+    "db:init:local": "wrangler d1 execute web-profile-visitors --local --file=./schema.sql",
+    "db:seed": "wrangler d1 execute web-profile-visitors --remote --file=./seed.sql",
+    "db:console": "wrangler d1 execute web-profile-visitors --remote --command \"SELECT COUNT(*) as total FROM visitors\""
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}

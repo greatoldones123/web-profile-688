@@ -6,7 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>访客记录管理</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="./echarts.min.js"></script>
     <style>
+        :root {
+            --ink: #0a0a0a;
+            --ink-soft: #2b2b2b;
+            --gray-1: #f7f7f6;
+            --gray-2: #f0f0ef;
+            --gray-3: #e4e4e2;
+            --gray-4: #c9c9c7;
+            --gray-5: #8e8e8c;
+            --line: #e6e6e4;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,59 +26,82 @@
         }
 
         body {
-            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
-            background: #c79b5c;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+                'Microsoft YaHei', sans-serif;
+            background: var(--gray-1);
+            color: var(--ink);
             min-height: 100vh;
-            padding: 20px;
+            padding: 32px 20px;
+            -webkit-font-smoothing: antialiased;
+            font-variant-numeric: tabular-nums;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
             overflow: hidden;
         }
 
+        /* ---------- Header ---------- */
         .header {
-            background: #b36901;
-            color: white;
-            padding: 30px 40px;
+            background: var(--ink);
+            color: #ffffff;
+            padding: 34px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 24px;
         }
 
         .header h1 {
-            font-size: 28px;
+            font-size: 19px;
+            font-weight: 500;
+            letter-spacing: 0.09em;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+            text-transform: uppercase;
+        }
+
+        .header h1 i {
+            font-size: 16px;
+            opacity: 0.7;
         }
 
         .stats {
             display: flex;
-            gap: 30px;
+            gap: 48px;
         }
 
         .stat-item {
-            text-align: center;
+            text-align: right;
         }
 
         .stat-number {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 30px;
+            font-weight: 300;
+            letter-spacing: 0.01em;
+            line-height: 1.1;
+            font-variant-numeric: tabular-nums;
         }
 
         .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
+            font-size: 10px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 6px;
         }
 
+        /* ---------- Controls ---------- */
         .controls {
-            padding: 25px 40px;
-            background: #f8f9fa;
+            padding: 20px 40px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--line);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -78,36 +113,48 @@
             display: flex;
             gap: 10px;
             flex: 1;
-            max-width: 400px;
+            max-width: 420px;
         }
 
         .search-box input {
             flex: 1;
-            padding: 10px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
+            padding: 11px 14px;
+            border: 1px solid var(--gray-3);
+            border-radius: 2px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--ink);
+            background: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-box input::placeholder {
+            color: var(--gray-5);
+            letter-spacing: 0.02em;
         }
 
         .search-box input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--ink);
+            box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.06);
         }
 
         .search-box button {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
+            padding: 11px 22px;
+            background: var(--ink);
+            color: #ffffff;
+            border: 1px solid var(--ink);
+            border-radius: 2px;
+            font-size: 13px;
+            font-family: inherit;
+            letter-spacing: 0.08em;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.2s, color 0.2s;
         }
 
         .search-box button:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
+            background: #ffffff;
+            color: var(--ink);
         }
 
         .filter-group {
@@ -117,120 +164,208 @@
         }
 
         .filter-group select {
-            padding: 10px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 11px 14px;
+            border: 1px solid var(--gray-3);
+            border-radius: 2px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--ink-soft);
             cursor: pointer;
-            background: white;
+            background: #ffffff;
+            letter-spacing: 0.04em;
+            transition: border-color 0.2s;
         }
 
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--ink);
+        }
+
+        /* ---------- Chart ---------- */
+        .chart-card {
+            padding: 28px 40px 32px;
+            border-top: 1px solid var(--line);
+            background: #ffffff;
+        }
+
+        .chart-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+
+        .chart-title {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--gray-5);
+        }
+
+        .chart-meta {
+            font-size: 11.5px;
+            letter-spacing: 0.06em;
+            color: var(--gray-5);
+            white-space: nowrap;
+        }
+
+        .chart-body {
+            width: 100%;
+            height: 300px;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-5);
+            font-size: 11px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        /* ---------- Table ---------- */
         .table-container {
-            padding: 0 40px 20px;
+            padding: 0 40px 8px;
             overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 0 0 20px;
         }
 
         thead {
-            background: #f8f9fa;
+            background: #ffffff;
         }
 
         th {
-            padding: 15px;
+            padding: 16px 15px;
             text-align: left;
+            font-size: 10px;
             font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #e0e0e0;
+            color: var(--gray-5);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--ink);
             white-space: nowrap;
         }
 
         td {
             padding: 15px;
-            border-bottom: 1px solid #f0f0f0;
-            color: #555;
+            border-bottom: 1px solid var(--gray-2);
+            color: var(--ink-soft);
+            font-size: 13.5px;
         }
 
         tbody tr {
-            transition: all 0.3s;
+            transition: background 0.18s;
         }
 
         tbody tr:hover {
-            background: #f8f9fa;
-            transform: scale(1.01);
+            background: var(--gray-1);
         }
 
+        .ip-address {
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            background: var(--gray-1);
+            border: 1px solid var(--gray-2);
+            padding: 3px 8px;
+            border-radius: 2px;
+            font-size: 12px;
+            color: var(--ink);
+        }
 
+        /* ---------- Pagination ---------- */
         .pagination {
-            padding: 30px 40px;
+            padding: 24px 40px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid var(--line);
+            gap: 20px;
         }
 
         .page-info {
-            color: #666;
-            font-size: 14px;
+            color: var(--gray-5);
+            font-size: 12.5px;
+            letter-spacing: 0.04em;
         }
 
         .page-controls {
             display: flex;
-            gap: 10px;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .page-controls span {
+            color: var(--gray-5);
+            padding: 0 4px !important;
         }
 
         .page-btn {
-            padding: 8px 16px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 8px;
+            min-width: 36px;
+            padding: 8px 12px;
+            border: 1px solid var(--gray-3);
+            background: #ffffff;
+            border-radius: 2px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            color: #333;
+            transition: all 0.18s;
+            font-size: 12.5px;
+            font-family: inherit;
+            color: var(--ink-soft);
+            font-variant-numeric: tabular-nums;
         }
 
         .page-btn:hover:not(:disabled) {
-            border-color: #667eea;
-            color: #667eea;
-            transform: translateY(-2px);
+            border-color: var(--ink);
+            color: var(--ink);
         }
 
         .page-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.3;
             cursor: not-allowed;
         }
 
         .page-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
+            background: var(--ink);
+            color: #ffffff;
+            border-color: var(--ink);
         }
 
+        /* ---------- States ---------- */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #999;
+            padding: 70px 20px;
+            color: var(--gray-5);
+            font-size: 13px;
+            letter-spacing: 0.06em;
         }
 
         .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.3;
+            font-size: 40px;
+            margin-bottom: 18px;
+            opacity: 0.35;
+            display: block;
         }
 
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #667eea;
+            padding: 60px 20px;
+            color: var(--ink);
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
         }
 
         .loading i {
-            font-size: 32px;
+            font-size: 22px;
+            display: block;
+            margin-bottom: 16px;
             animation: spin 1s linear infinite;
         }
 
@@ -244,139 +379,647 @@
             }
         }
 
-        .ip-address {
-            font-family: 'Courier New', monospace;
-            background: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-
-        /* 响应式设计 */
+        /* ---------- Responsive ---------- */
         @media screen and (max-width: 768px) {
+            body {
+                padding: 16px 12px;
+            }
+
             .header {
                 flex-direction: column;
-                gap: 20px;
-                text-align: center;
+                align-items: flex-start;
+                gap: 26px;
+                padding: 26px 22px;
             }
 
             .header h1 {
-                font-size: 22px;
+                font-size: 15px;
+                letter-spacing: 0.08em;
+            }
+
+            .stats {
+                width: 100%;
+                justify-content: space-between;
+                gap: 24px;
+            }
+
+            .stat-item {
+                text-align: left;
+            }
+
+            .stat-number {
+                font-size: 24px;
             }
 
             .controls {
                 flex-direction: column;
                 align-items: stretch;
+                padding: 16px 22px;
             }
 
             .search-box {
                 max-width: 100%;
             }
 
+            .chart-card {
+                padding: 22px 22px 26px;
+            }
+
+            .chart-head {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .chart-body {
+                height: 260px;
+            }
+
+            .chart-placeholder {
+                height: 260px;
+            }
+
             .table-container {
-                padding: 0 20px 20px;
+                padding: 0 22px 8px;
             }
 
             table {
                 font-size: 12px;
             }
 
+            th {
+                letter-spacing: 0.1em;
+            }
+
             th,
             td {
-                padding: 10px 8px;
+                padding: 11px 8px;
             }
 
             .pagination {
                 flex-direction: column;
-                gap: 20px;
-                padding: 20px;
+                align-items: flex-start;
+                gap: 18px;
+                padding: 20px 22px 24px;
             }
 
             .page-controls {
                 flex-wrap: wrap;
-                justify-content: center;
+            }
+        }
+        /* ==================== 侧边栏布局 ==================== */
+        body {
+            padding: 0;
+            background: var(--gray-1);
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ---------- Sidebar ---------- */
+        .sidebar {
+            width: 240px;
+            flex: 0 0 240px;
+            background: var(--ink);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .brand {
+            padding: 26px 24px 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .brand-title {
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .brand-sub {
+            margin-top: 6px;
+            font-size: 11px;
+            letter-spacing: 0.16em;
+            color: rgba(255, 255, 255, 0.42);
+        }
+
+        .nav {
+            flex: 1;
+            padding: 14px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .nav-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            font-size: 13px;
+            font-family: inherit;
+            letter-spacing: 0.06em;
+            color: rgba(255, 255, 255, 0.6);
+            background: transparent;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+        }
+
+        .nav-item i {
+            width: 14px;
+            font-size: 12px;
+            opacity: 0.75;
+        }
+
+        .nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.09);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ffffff;
+        }
+
+        .sidebar-foot {
+            padding: 16px 24px 22px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .refresh-btn {
+            width: 100%;
+            padding: 9px 12px;
+            font-size: 11px;
+            font-family: inherit;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.72);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+
+        .refresh-btn:hover {
+            color: var(--ink);
+            background: #ffffff;
+            border-color: #ffffff;
+        }
+
+        .refresh-btn i {
+            margin-right: 6px;
+        }
+
+        /* ---------- Main ---------- */
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 32px 36px 44px;
+        }
+
+        .view[hidden] {
+            display: none;
+        }
+
+        .page-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 22px;
+        }
+
+        .page-head h1 {
+            font-size: 17px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .page-desc {
+            font-size: 12px;
+            color: var(--gray-5);
+            letter-spacing: 0.04em;
+        }
+
+        /* ---------- 统计卡片 ---------- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 3px;
+            padding: 24px 26px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gray-5);
+        }
+
+        .stat-card .stat-number {
+            margin-top: 10px;
+            font-size: 34px;
+            font-weight: 300;
+            line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ---------- 通用卡片 ---------- */
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .card-title {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--gray-5);
+        }
+
+        .card-meta {
+            font-size: 11.5px;
+            letter-spacing: 0.06em;
+            color: var(--gray-5);
+            white-space: nowrap;
+        }
+
+        /* 卡片内部元素间距适配 */
+        .card .search-box {
+            max-width: 400px;
+        }
+
+        .card .table-container {
+            padding: 0 24px 8px;
+        }
+
+        .card .chart-body {
+            width: auto;
+            margin: 12px 24px 20px;
+        }
+
+        .card .chart-placeholder {
+            margin: 12px 24px 20px;
+        }
+
+        .card .pagination {
+            padding: 18px 24px 22px;
+        }
+
+        /* 表格内的邮箱链接 */
+        .mail-link {
+            color: var(--ink);
+            text-decoration: none;
+            border-bottom: 1px solid var(--gray-3);
+            transition: border-color 0.18s;
+        }
+
+        .mail-link:hover {
+            border-bottom-color: var(--ink);
+        }
+
+        /* ---------- 侧边栏响应式 ---------- */
+        @media screen and (max-width: 900px) {
+            .layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                flex: none;
+                height: auto;
+                position: static;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding-right: 16px;
+            }
+
+            .brand {
+                padding: 14px 16px;
+                border-bottom: none;
+            }
+
+            .brand-sub {
+                display: none;
+            }
+
+            .nav {
+                flex-direction: row;
+                padding: 0;
+                flex: none;
+            }
+
+            .nav-item {
+                padding: 16px 12px;
+            }
+
+            .nav-item i {
+                display: none;
+            }
+
+            .nav-item.active::before {
+                left: 0;
+                right: 0;
+                top: auto;
+                bottom: 0;
+                width: auto;
+                height: 2px;
+            }
+
+            .sidebar-foot {
+                padding: 0;
+                border-top: none;
+            }
+
+            .refresh-btn {
+                width: auto;
+                white-space: nowrap;
+            }
+
+            .main {
+                padding: 20px 16px 32px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-head {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+
+            .stat-card .stat-number {
+                font-size: 28px;
+            }
+
+            .card-head {
+                padding: 16px;
+            }
+
+            .card .table-container {
+                padding: 0 16px 8px;
+            }
+
+            .card .chart-body,
+            .card .chart-placeholder {
+                margin: 12px 16px 18px;
+            }
+
+            .card .pagination {
+                padding: 16px;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>
-                <i class="fas fa-users"></i>
-                访客记录管理
-            </h1>
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-number" id="total-visitors">0</div>
-                    <div class="stat-label">总访客数</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="today-visitors">0</div>
-                    <div class="stat-label">今日访客</div>
-                </div>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-title">Diyu Zhou</div>
+                <div class="brand-sub">访客数据后台</div>
             </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="搜索 IP 地址、浏览器或页面...">
-                <button onclick="searchVisitors()">
-                    <i class="fas fa-search"></i> 搜索
+            <nav class="nav">
+                <button class="nav-item active" data-view="overview">
+                    <i class="fas fa-chart-bar"></i>
+                    概览
+                </button>
+                <button class="nav-item" data-view="visitors">
+                    <i class="fas fa-list-ul"></i>
+                    访客记录
+                </button>
+                <button class="nav-item" data-view="contacts">
+                    <i class="fas fa-envelope"></i>
+                    联系表单
+                </button>
+            </nav>
+            <div class="sidebar-foot">
+                <button class="refresh-btn" onclick="refreshAll()">
+                    <i class="fas fa-sync-alt"></i>刷新数据
                 </button>
             </div>
-            <div class="filter-group">
-                <select id="page-size" onchange="changePageSize()">
-                    <option value="10">每页 10 条</option>
-                    <option value="20">每页 20 条</option>
-                    <option value="50">每页 50 条</option>
-                    <option value="100">每页 100 条</option>
-                </select>
-            </div>
-        </div>
+        </aside>
 
-        <!-- Table -->
-        <div class="table-container">
-            <table id="visitors-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>IP 地址</th>
-                        <th>访问时间</th>
-                        <th>访问页面</th>
-                        <th>浏览器</th>
-                        <th>操作系统</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <!-- Data will be inserted here -->
-                </tbody>
-            </table>
-        </div>
+        <!-- Main -->
+        <main class="main">
+            <!-- ===== 概览 ===== -->
+            <section class="view" id="view-overview">
+                <div class="page-head">
+                    <h1>概览</h1>
+                    <div class="page-desc">访客统计与页面热度排行</div>
+                </div>
 
-        <!-- Pagination -->
-        <div class="pagination">
-            <div class="page-info">
-                显示第 <span id="start-index">0</span> - <span id="end-index">0</span> 条，共 <span
-                    id="total-records">0</span> 条记录
-            </div>
-            <div class="page-controls" id="page-controls">
-                <!-- Page buttons will be inserted here -->
-            </div>
-        </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label" id="total-label">总访客数</div>
+                        <div class="stat-number" id="total-visitors">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">今日访客</div>
+                        <div class="stat-number" id="today-visitors">0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head">
+                        <div class="card-title">页面访问排行 · 全部时间</div>
+                        <div class="card-meta" id="chart-meta"></div>
+                    </div>
+                    <div id="page-chart" class="chart-body"></div>
+                </div>
+            </section>
+
+            <!-- ===== 访客记录 ===== -->
+            <section class="view" id="view-visitors" hidden>
+                <div class="page-head">
+                    <h1>访客记录</h1>
+                    <div class="page-desc">搜索、筛选与分页浏览全部访问明细</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head">
+                        <div class="search-box">
+                            <input type="text" id="search-input" placeholder="搜索 IP 地址、浏览器或页面...">
+                            <button onclick="searchVisitors()">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                        </div>
+                        <div class="filter-group">
+                            <select id="time-range" onchange="changeTimeRange()">
+                                <option value="all">全部时间</option>
+                                <option value="today">今天</option>
+                                <option value="7d">近 7 天</option>
+                                <option value="30d">近 30 天</option>
+                            </select>
+                            <select id="page-size" onchange="changePageSize()">
+                                <option value="10">每页 10 条</option>
+                                <option value="20">每页 20 条</option>
+                                <option value="50">每页 50 条</option>
+                                <option value="100">每页 100 条</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="visitors-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>IP 地址</th>
+                                    <th>访问时间</th>
+                                    <th>访问页面</th>
+                                    <th>浏览器</th>
+                                    <th>操作系统</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- Data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination">
+                        <div class="page-info">
+                            显示第 <span id="start-index">0</span> - <span id="end-index">0</span> 条，共 <span
+                                id="total-records">0</span> 条记录
+                        </div>
+                        <div class="page-controls" id="page-controls">
+                            <!-- Page buttons will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== 联系表单 ===== -->
+            <section class="view" id="view-contacts" hidden>
+                <div class="page-head">
+                    <h1>联系表单</h1>
+                    <div class="page-desc">访客通过联系页提交的消息</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head">
+                        <div class="search-box">
+                            <input type="text" id="contact-search-input" placeholder="搜索姓名、邮箱、主题或内容...">
+                            <button onclick="searchContacts()">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                        </div>
+                        <div class="filter-group">
+                            <select id="contact-time-range" onchange="changeContactRange()">
+                                <option value="all">全部时间</option>
+                                <option value="today">今天</option>
+                                <option value="7d">近 7 天</option>
+                                <option value="30d">近 30 天</option>
+                            </select>
+                            <select id="contact-page-size" onchange="changeContactPageSize()">
+                                <option value="10">每页 10 条</option>
+                                <option value="20">每页 20 条</option>
+                                <option value="50">每页 50 条</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>姓名</th>
+                                    <th>邮箱</th>
+                                    <th>主题</th>
+                                    <th>内容</th>
+                                    <th>提交时间</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contact-table-body">
+                                <!-- Data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination">
+                        <div class="page-info">
+                            显示第 <span id="contact-start-index">0</span> - <span id="contact-end-index">0</span> 条，共 <span
+                                id="contact-total-records">0</span> 条记录
+                        </div>
+                        <div class="page-controls" id="contact-page-controls">
+                            <!-- Page buttons will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script>
         // API 基础 URL
-        const API_BASE_URL = 'http://122.51.104.18:18888';
+        // 管理后台为本地打开使用（不随站点部署），所以必须写绝对地址，不能留空走同域。
+        // 直连 Cloudflare Workers：Worker 已开启 CORS（Access-Control-Allow-Origin: *），
+        // 因此本地 file:// 打开或从任意域访问都能调用，且不依赖 Netlify 部署状态。
+        const API_BASE_URL = 'https://diyuzhou-api.2770894499.workers.dev';
 
         // 全局变量
         let currentPage = 1;
         let pageSize = 10;
         let searchTerm = '';
+        let timeRange = 'all';
+
+        // 顶部统计标签随所选时间周期变化
+        const RANGE_LABELS = {
+            'all': '总访客数',
+            'today': '今日访客',
+            '7d': '近 7 天访客',
+            '30d': '近 30 天访客'
+        };
 
         // 格式化时间 - 处理字符串格式的时间
         function formatTime(timestamp) {
@@ -424,12 +1067,13 @@
         // 获取统计信息
         async function fetchStats() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/stats`);
+                const response = await fetch(`${API_BASE_URL}/api/stats?range=${timeRange}`);
                 const result = await response.json();
 
                 if (result.success) {
                     document.getElementById('total-visitors').textContent = result.stats.total;
                     document.getElementById('today-visitors').textContent = result.stats.today;
+                    document.getElementById('total-label').textContent = RANGE_LABELS[timeRange] || '总访客数';
                 }
             } catch (error) {
                 console.error('获取统计信息失败:', error);
@@ -445,7 +1089,8 @@
             try {
                 const params = new URLSearchParams({
                     page: currentPage,
-                    pageSize: pageSize
+                    pageSize: pageSize,
+                    range: timeRange
                 });
 
                 if (searchTerm) {
@@ -563,6 +1208,15 @@
             fetchVisitors();
         }
 
+        // 改变时间周期
+        // 注意：页面排行始终展示整体数据，不参与筛选，所以这里不重新加载图表
+        function changeTimeRange() {
+            timeRange = document.getElementById('time-range').value;
+            currentPage = 1;
+            fetchVisitors();
+            fetchStats();
+        }
+
         // 搜索功能
         function searchVisitors() {
             searchTerm = document.getElementById('search-input').value.trim();
@@ -577,10 +1231,405 @@
             }
         });
 
+        // ---------- 页面访问排行图表 ----------
+        let pageChart = null;
+
+        // Y 轴标签映射：显示为「中文名(文件名)」
+        // 未列出的页面自动回退为原始文件名；想改中文名直接改这里即可
+        const PAGE_LABELS = {
+            'index.html': '首页(index.html)',
+            'cv.html': '简历(cv.html)',
+            'research.html': '研究(research.html)',
+            'design.html': '设计(design.html)',
+            'contact.html': '联系(contact.html)',
+            'detail-1.html': '详情页1(detail-1.html)',
+            'detail-2.html': '详情页2(detail-2.html)',
+            'detail-3.html': '详情页3(detail-3.html)',
+            'detail-4.html': '详情页4(detail-4.html)',
+            'detail-5.html': '详情页5(detail-5.html)',
+            'detail-6.html': '详情页6(detail-6.html)',
+            'detail-7.html': '详情页7(detail-7.html)',
+            'detail-8.html': '详情页8(detail-8.html)',
+            // 早期埋点遗留的无扩展名记录
+            'cv': '简历(旧记录)',
+            'research': '研究(旧记录)',
+            'detail-1': '详情页1(旧记录)',
+            'detail-2': '详情页2(旧记录)'
+        };
+
+        function formatPageLabel(page) {
+            return PAGE_LABELS[page] || page;
+        }
+
+        // 获取页面访问排行（优先走后端聚合接口）
+        async function fetchPageStats() {
+            try {
+                // 排行始终基于全量数据，不跟随顶部的时间周期筛选
+                const response = await fetch(`${API_BASE_URL}/api/stats/pages?limit=10`);
+                const result = await response.json();
+
+                if (result.success && Array.isArray(result.data)) {
+                    return result.data;
+                }
+                throw new Error('聚合接口返回异常');
+            } catch (error) {
+                console.warn('页面排行接口不可用，改用本地聚合:', error);
+                return await fetchPageStatsLocally();
+            }
+        }
+
+        // 兜底方案：后端未更新时，拉取前若干页数据在本地聚合
+        async function fetchPageStatsLocally() {
+            const counts = {};
+            const maxPages = 10;
+            const size = 100;
+
+            for (let p = 1; p <= maxPages; p++) {
+                const response = await fetch(`${API_BASE_URL}/api/visitors?page=${p}&pageSize=${size}`);
+                const result = await response.json();
+
+                if (!result.success || !result.data || result.data.length === 0) break;
+
+                result.data.forEach(function (visitor) {
+                    counts[visitor.page] = (counts[visitor.page] || 0) + 1;
+                });
+
+                if (p >= result.pagination.totalPages) break;
+            }
+
+            return Object.keys(counts)
+                .map(function (page) { return { page: page, count: counts[page] }; })
+                .sort(function (a, b) { return b.count - a.count; })
+                .slice(0, 10);
+        }
+
+        // 空态 / 异常态提示
+        // 必须先销毁已有实例：这里会清空容器的 textContent，
+        // 若实例还在，pageChart 变量非空会导致后续无法重新初始化，图表将永久空白
+        function showChartPlaceholder(el, text) {
+            if (pageChart) {
+                pageChart.dispose();
+                pageChart = null;
+            }
+            el.style.height = '';
+            el.classList.remove('chart-body');
+            el.classList.add('chart-placeholder');
+            el.textContent = text;
+        }
+
+        // 渲染图表
+        function renderPageChart(data) {
+            const el = document.getElementById('page-chart');
+            const meta = document.getElementById('chart-meta');
+
+            if (!window.echarts) {
+                showChartPlaceholder(el, '图表库加载失败');
+                meta.textContent = '';
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                showChartPlaceholder(el, '暂无数据');
+                meta.textContent = '';
+                return;
+            }
+
+            // 容器高度随条目数自适应
+            el.classList.remove('chart-placeholder');
+            el.classList.add('chart-body');
+            el.style.height = Math.max(200, data.length * 34 + 50) + 'px';
+
+            if (!pageChart) {
+                // 只在首次初始化时清空容器。
+                // 若每次渲染都清空，会删掉 ECharts 生成的 canvas，而实例仍然存在，
+                // 后续 setOption 就画在一个已脱离 DOM 的元素上 —— 表现为图表空白
+                el.textContent = '';
+                pageChart = window.echarts.init(el);
+                window.addEventListener('resize', function () {
+                    if (pageChart) pageChart.resize();
+                });
+            }
+
+            // 容器高度是动态计算的，必须同步尺寸，否则 canvas 会沿用旧高度
+            pageChart.resize();
+
+            // 横向条形图：从小到大排列，访问量最高的显示在最上方
+            const sorted = data.slice().sort(function (a, b) { return a.count - b.count; });
+
+            pageChart.setOption({
+                grid: { left: 0, right: 46, top: 8, bottom: 4, containLabel: true },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    backgroundColor: '#0a0a0a',
+                    borderWidth: 0,
+                    padding: [9, 13],
+                    textStyle: { color: '#ffffff', fontSize: 12 },
+                    formatter: function (params) {
+                        return params[0].name + '<br/>访问 <b>' + params[0].value + '</b> 次';
+                    }
+                },
+                xAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    axisTick: { show: false },
+                    axisLabel: { color: '#8e8e8c', fontSize: 11 },
+                    splitLine: { lineStyle: { color: '#f0f0ef' } }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: sorted.map(function (item) { return formatPageLabel(item.page); }),
+                    axisLine: { show: false },
+                    axisTick: { show: false },
+                    axisLabel: {
+                        color: '#2b2b2b',
+                        fontSize: 12,
+                        width: 210,
+                        overflow: 'truncate'
+                    }
+                },
+                series: [{
+                    type: 'bar',
+                    data: sorted.map(function (item) { return item.count; }),
+                    barWidth: '50%',
+                    itemStyle: { color: '#0a0a0a', borderRadius: [0, 2, 2, 0] },
+                    emphasis: { itemStyle: { color: '#3d3d3d' } },
+                    label: {
+                        show: true,
+                        position: 'right',
+                        color: '#8e8e8c',
+                        fontSize: 11
+                    }
+                }]
+            }, true);
+
+            const total = data.reduce(function (sum, item) { return sum + item.count; }, 0);
+            meta.textContent = 'TOP ' + data.length + ' · 共 ' + total + ' 次访问';
+        }
+
+        // 加载图表
+        async function initPageChart() {
+            try {
+                const data = await fetchPageStats();
+                renderPageChart(data);
+            } catch (error) {
+                console.error('加载页面排行失败:', error);
+                document.getElementById('chart-meta').textContent = '加载失败';
+            }
+        }
+
+        // ---------- 通用工具 ----------
+        // 联系表单内容来自外部输入，渲染前必须转义，避免 XSS
+        function escapeHtml(value) {
+            return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+            });
+        }
+
+        function truncateText(value, max) {
+            const text = String(value == null ? '' : value);
+            return text.length > max ? text.slice(0, max) + '…' : text;
+        }
+
+        // ---------- 联系表单 ----------
+        let contactPage = 1;
+        let contactPageSize = 10;
+        let contactSearchTerm = '';
+        let contactTimeRange = 'all';
+        let contactsLoaded = false;
+
+        function showContactMessage(message) {
+            document.getElementById('contact-table-body').innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <div>${escapeHtml(message)}</div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        async function fetchContacts() {
+            document.getElementById('contact-table-body').innerHTML = `
+                <tr>
+                    <td colspan="6" class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <div>加载中...</div>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                const params = new URLSearchParams({
+                    page: contactPage,
+                    pageSize: contactPageSize,
+                    range: contactTimeRange
+                });
+
+                if (contactSearchTerm) {
+                    params.append('search', contactSearchTerm);
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/contacts?${params}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    renderContacts(result.data, result.pagination);
+                } else {
+                    showContactMessage('获取数据失败');
+                }
+            } catch (error) {
+                console.error('获取联系表单失败:', error);
+                showContactMessage('无法连接到服务器，请检查网络连接');
+            }
+        }
+
+        function renderContacts(records, pagination) {
+            if (!records || records.length === 0) {
+                showContactMessage('暂无提交记录');
+                updateContactPagination({ page: 1, pageSize: contactPageSize, total: 0, totalPages: 0 });
+                return;
+            }
+
+            const startIndex = (pagination.page - 1) * pagination.pageSize;
+
+            document.getElementById('contact-table-body').innerHTML = records.map(function (item, index) {
+                return `
+                    <tr>
+                        <td>${startIndex + index + 1}</td>
+                        <td>${escapeHtml(item.name)}</td>
+                        <td><a class="mail-link" href="mailto:${escapeHtml(item.email)}">${escapeHtml(item.email)}</a></td>
+                        <td>${escapeHtml(item.subject)}</td>
+                        <td title="${escapeHtml(item.message)}">${escapeHtml(truncateText(item.message, 46))}</td>
+                        <td>${escapeHtml(formatTime(item.created_at))}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateContactPagination(pagination);
+        }
+
+        function updateContactPagination(pagination) {
+            const totalPages = pagination.totalPages || 0;
+            const startIndex = pagination.total > 0 ? (pagination.page - 1) * pagination.pageSize + 1 : 0;
+            const endIndex = Math.min(pagination.page * pagination.pageSize, pagination.total);
+
+            document.getElementById('contact-start-index').textContent = startIndex;
+            document.getElementById('contact-end-index').textContent = endIndex;
+            document.getElementById('contact-total-records').textContent = pagination.total;
+
+            let html = `
+                <button class="page-btn" onclick="goToContactPage(1)" ${contactPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button class="page-btn" onclick="goToContactPage(${contactPage - 1})" ${contactPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-left"></i>
+                </button>
+            `;
+
+            const startPage = Math.max(1, contactPage - 2);
+            const endPage = Math.min(totalPages, contactPage + 2);
+
+            if (startPage > 1) {
+                html += `<button class="page-btn" onclick="goToContactPage(1)">1</button>`;
+                if (startPage > 2) html += `<span>...</span>`;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button class="page-btn ${i === contactPage ? 'active' : ''}" onclick="goToContactPage(${i})">${i}</button>`;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<span>...</span>`;
+                html += `<button class="page-btn" onclick="goToContactPage(${totalPages})">${totalPages}</button>`;
+            }
+
+            html += `
+                <button class="page-btn" onclick="goToContactPage(${contactPage + 1})" ${contactPage === totalPages || totalPages === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-right"></i>
+                </button>
+                <button class="page-btn" onclick="goToContactPage(${totalPages})" ${contactPage === totalPages || totalPages === 0 ? 'disabled' : ''}>
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            `;
+
+            document.getElementById('contact-page-controls').innerHTML = html;
+        }
+
+        function goToContactPage(page) {
+            if (page < 1) return;
+            contactPage = page;
+            fetchContacts();
+        }
+
+        function changeContactPageSize() {
+            contactPageSize = parseInt(document.getElementById('contact-page-size').value);
+            contactPage = 1;
+            fetchContacts();
+        }
+
+        function changeContactRange() {
+            contactTimeRange = document.getElementById('contact-time-range').value;
+            contactPage = 1;
+            fetchContacts();
+        }
+
+        function searchContacts() {
+            contactSearchTerm = document.getElementById('contact-search-input').value.trim();
+            contactPage = 1;
+            fetchContacts();
+        }
+
+        // 回车搜索
+        document.getElementById('contact-search-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchContacts();
+            }
+        });
+
+        // ---------- 视图切换 ----------
+        function switchView(view) {
+            document.querySelectorAll('.nav-item').forEach(function (btn) {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+
+            document.querySelectorAll('.view').forEach(function (section) {
+                section.hidden = section.id !== 'view-' + view;
+            });
+
+            // 图表容器在隐藏状态下尺寸为 0，切回来必须重新测量
+            if (view === 'overview' && pageChart) {
+                pageChart.resize();
+            }
+
+            // 联系表单首次进入时才加载
+            if (view === 'contacts' && !contactsLoaded) {
+                contactsLoaded = true;
+                fetchContacts();
+            }
+        }
+
+        document.querySelectorAll('.nav-item').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                switchView(this.dataset.view);
+            });
+        });
+
+        // 刷新当前全部数据
+        function refreshAll() {
+            fetchStats();
+            fetchVisitors();
+            initPageChart();
+            if (contactsLoaded) {
+                fetchContacts();
+            }
+        }
+
         // 页面加载完成后初始化
         window.addEventListener('DOMContentLoaded', function () {
             fetchStats();
             fetchVisitors();
+            initPageChart();
         });
     </script>
 </body>

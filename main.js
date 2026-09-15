@@ -103,7 +103,9 @@ if (document.readyState === 'loading') {
 // ==================== 访客埋点功能 ====================
 
 // API 配置
-const VISITOR_API_URL = 'http://122.51.104.18:18888/api/visit';
+// 同域相对路径，由 Netlify 边缘转发到 Cloudflare Workers（见根目录 _redirects）
+// 这样浏览器看到的是 https://diyuzhou.com/api/visit，不触发 Mixed Content，也不产生跨域
+const VISITOR_API_URL = '/api/visit';
 
 // 获取浏览器信息
 function getBrowserInfo() {
@@ -154,27 +156,14 @@ function getCurrentPage() {
     return page;
 }
 
-// 获取访客IP地址（API）
-async function getVisitorIP() {
-    try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        return data.ip;
-    } catch (error) {
-        console.error('获取IP失败:', error);
-        return 'Unknown';
-    }
-}
-
 // 记录访客访问
 async function recordVisit() {
     try {
-        // 获取访客IP
-        const ip = await getVisitorIP();
-
         // 获取访客信息
+        // 访客 IP 由后端从请求头（X-Forwarded-For / CF-Connecting-IP）读取，
+        // 前端不再调用第三方 IP 接口，既避免了被墙，也防止 IP 被伪造
         const visitorData = {
-            ip: ip,
+            ip: '',
             page: getCurrentPage(),
             browser: getBrowserInfo(),
             os: getOSInfo(),
@@ -299,16 +288,24 @@ if (contactForm) {
         submitBtn.disabled = true;
 
         try {
-            await fetch('https://script.google.com/macros/s/AKfycbwbKPsrnEGgbuvIXu3aJ9oqSFiVvIbj74_XVfadQ5tuB01gG-D37Asx9VClciheE6PJ/exec', {
+            // 提交到自有后端（同域，由 Netlify 转发到 Cloudflare Workers）
+            const response = await fetch('/api/contact', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'text/plain',
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(formData),
             });
 
-            showNotification('您的消息已发送！我们会尽快与您联系。', 'success');
-            this.reset();
+            // 读取后端返回的真实结果，避免“其实没成功却提示成功”
+            const result = await response.json().catch(function () { return {}; });
+
+            if (response.ok && result.success) {
+                showNotification('您的消息已发送！我们会尽快与您联系。', 'success');
+                this.reset();
+            } else {
+                showNotification(result.message || '发送失败，请稍后重试。', 'error');
+            }
         } catch (error) {
             console.error('发送失败:', error);
             showNotification('发送失败，请检查网络后重试。', 'error');

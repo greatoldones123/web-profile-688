@@ -1,0 +1,10 @@
+# 依赖与构建产物
+node_modules/
+
+# wrangler 本地状态（miniflare 的本地 D1 文件等）
+.wrangler/
+.dev.vars
+
+# 本地 secrets，绝不提交
+.env
+.env.*

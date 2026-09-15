@@ -1,0 +1,15 @@
+name = "diyuzhou-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# 部署后 Cloudflare 会分配一个 xxx.workers.dev 地址
+# 如需绑定自定义域名，在此处补充 routes 配置（前提：域名 NS 已托管到 Cloudflare）
+
+[[d1_databases]]
+binding = "DB"
+database_name = "web-profile-visitors"
+# 由 wrangler d1 create 生成，创建于 2026-09-15，区域 WNAM
+database_id = "1eebb378-ba06-447a-89a8-f3af2bb5771b"
+
+[observability]
+enabled = true
